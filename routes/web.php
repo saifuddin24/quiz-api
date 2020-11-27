@@ -13,10 +13,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Auth::routes( );
-
-//Route::get( "/{any}", 'AppController@index')->where( "any", "[^api]*" );
-
-//Route::get( "/admins", 'AppController@index')->name('administrator');
-
-Route::get( "/{any}", 'AppController@index')->where( "any", ".*" );
+Route::get('/', function () {
+    return view('welcome');
+});
