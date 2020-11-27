@@ -1,6 +1,4 @@
 const mix = require('laravel-mix');
-const tailwindcss = require('tailwindcss');
-const vuetifyLoaderPlugin = require('vuetify-loader/lib/plugin');
 
 /*
  |--------------------------------------------------------------------------
@@ -8,23 +6,12 @@ const vuetifyLoaderPlugin = require('vuetify-loader/lib/plugin');
  |--------------------------------------------------------------------------
  |
  | Mix provides a clean, fluent API for defining some Webpack build steps
- | for your Laravel application. By default, we are compiling the Sass
+ | for your Laravel applications. By default, we are compiling the CSS
  | file for the application as well as bundling up all the JS files.
  |
  */
 
-var WeppackConfig = {
-    plugins: [
-        new vuetifyLoaderPlugin(),
-    ]
-}
-
-mix.webpackConfig( WeppackConfig )
-    .js('resources/js/app.js', 'public/js')
-    .sass('resources/sass/app.scss', 'public/css')
-    .options({
-        processCssUrls: false,
-        postCss: [
-            tailwindcss('./tailwind.config.js')
-        ],
-    });
+mix.js('resources/js/app.js', 'public/js')
+    .postCss('resources/css/app.css', 'public/css', [
+        //
+    ]);

@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Foundation\Inspiring;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 
 /*
@@ -17,8 +16,4 @@ use Illuminate\Support\Facades\Artisan;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
-})->describe('Display an inspiring quote');
-
-Artisan::command('ip', function (Request $request) {;
-    $this->comment("IP: " . $request->ip(). ", Client IP: " . $request->getClientIp() );
-})->describe('Display the ip address');
+})->purpose('Display an inspiring quote');
