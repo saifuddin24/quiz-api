@@ -13,19 +13,23 @@ class CreateQuizzesTable extends Migration
      */
     public function up()
     {
-        Schema::create("quizzes", function (Blueprint $table) {
-            $table->id();
-            $table->string( "title" )->default('(untitled)');
-            $table->text( "description" )->default(NULL);
-            $table->integer("full_marks")->default(100)->nullable();
-            $table->float("negative_marks_each", 12, 2)->default(0 )->nullable();
-            $table->string("negative_mark_type")->default("percent" )->nullable();
-            $table->unsignedBigInteger( "user_id" );
-            $table->tinyInteger("publish")->default(0 )->nullable( )->comment( '0=unpublidh,1=publish,2=draft');
-            $table->timestampsTz( );
-            $table->softDeletesTz( );
-            $table->foreign("user_id" )->references("id" )->on("users");
-        });
+        if( !Schema::hasTable('quizzes') ) {
+            Schema::create("quizzes", function (Blueprint $table) {
+                $table->increments('id');
+                $table->string("title")->default('(untitled)');
+                $table->text("description")->default(NULL)->nullable();
+                $table->integer("full_marks")->default(100)->nullable();
+                $table->float("negative_marks_each", 12, 2)->default(0)->nullable();
+                $table->string("negative_mark_type")->default("percent")->nullable();
+                $table->string("answer_options_type", 2)->default("A")->nullable();
+                $table->unsignedBigInteger("user_id");
+                $table->tinyInteger("publish")->nullable()->default(0);
+                $table->timestamp("published_at")->useCurrent();
+                $table->timestampsTz();
+                $table->softDeletesTz();
+                $table->foreign("user_id")->references("id")->on("users");
+            });
+        }
     }
 
     /**
@@ -35,6 +39,6 @@ class CreateQuizzesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('quizzes');
+        //Schema::dropIfExists('quizzes');
     }
 }

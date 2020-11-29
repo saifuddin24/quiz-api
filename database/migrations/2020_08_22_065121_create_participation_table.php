@@ -13,15 +13,18 @@ class CreateParticipationTable extends Migration
      */
     public function up()
     {
-        Schema::create('participation', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger("user_id" );
-            $table->unsignedBigInteger("quiz_id" );
-            $table->timestamp('participation_date' );
+        if( !Schema::hasTable('participation') ) {
+            Schema::create('participation', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger("user_id");
+                $table->unsignedInteger("quiz_id");
+                $table->timestamp("participation_date");
+                $table->json("quiz_data")->nullable()->default(null);
 
-            $table->foreign("user_id" )->references("id" )->on("users")->cascadeOnDelete( );
-            $table->foreign("quiz_id" )->references("id" )->on("quizzes" )->onDelete( 'NO ACTION' );
-        });
+                $table->foreign("user_id")->references("id")->on("users")->cascadeOnDelete();
+                $table->foreign("quiz_id")->references("id")->on("quizzes")->onDelete('NO ACTION');
+            });
+        }
     }
 
     /**
@@ -31,6 +34,6 @@ class CreateParticipationTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('participation');
+        //Schema::dropIfExists('participation');
     }
 }

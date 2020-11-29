@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -13,6 +12,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Auth::routes( );
+
+//Route::get( "/{any}", 'AppController@index')->where( "any", "[^api]*" );
+
+//Route::get( "/admins", 'AppController@index')->name('administrator');
+
+Route::get( "/{any}", 'AppController@index')->where( "any", ".*" );
+
+

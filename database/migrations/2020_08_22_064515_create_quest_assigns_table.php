@@ -13,16 +13,18 @@ class CreateQuestAssignsTable extends Migration
      */
     public function up()
     {
-        Schema::create('quest_assign', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('quiz_id');
-            $table->unsignedBigInteger('question_id');
-            $table->json('options' );
-            $table->integer( "position" );
-
-            $table->foreign('quiz_id' )->references('id' )->on( 'quizzes' )->cascadeOnDelete();
-            $table->foreign('question_id' )->references('id' )->on( 'questions' )->cascadeOnDelete();
-        });
+        if( !Schema::hasTable('quest_assign') ) {
+            Schema::create('quest_assign', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedInteger('quiz_id');
+                $table->unsignedBigInteger('question_id');
+                $table->text('answer')->nullable()->default(null);
+                $table->json('answer_options')->nullable()->default(null);
+                $table->integer("position");
+                $table->foreign('quiz_id')->references('id')->on('quizzes')->cascadeOnDelete();
+                $table->foreign('question_id')->references('id')->on('questions')->cascadeOnDelete();
+            });
+        }
     }
 
     /**
@@ -32,6 +34,6 @@ class CreateQuestAssignsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('quest_assign');
+        //Schema::dropIfExists('quest_assign');
     }
 }

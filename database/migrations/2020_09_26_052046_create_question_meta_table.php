@@ -13,14 +13,20 @@ class CreateQuestionMetaTable extends Migration
      */
     public function up()
     {
-        Schema::create('question_meta', function (Blueprint $table) {
-            $table->id();
-            $table->string( 'group',  50 )->nullable()->default(null);
-            $table->string( 'meta_name',  191 )->nullable();
-            $table->text( 'meta_value' )->nullable()->default(null);
-            $table->unsignedBigInteger( 'quest_id');
-            $table->foreign( 'quest_id')->references('id')->on('questions')->cascadeOnDelete()->onUpdate('CASCADE');
-        });
+        if( !Schema::hasTable('question_meta' ) ) {
+            Schema::create('question_meta', function (Blueprint $table) {
+                $table->id();
+                $table->string('group', 50)->nullable()->default(null);
+                $table->string('meta_name', 191)->nullable();
+                $table->text('meta_value')->nullable()->default(null);
+                $table->unsignedBigInteger('quest_id');
+                $table->foreign('quest_id')
+                    ->references('id')
+                    ->on('questions')->cascadeOnDelete()
+                    ->onUpdate('CASCADE');
+            });
+        }
+
     }
 
     /**
@@ -30,6 +36,6 @@ class CreateQuestionMetaTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('question_meta');
+        //Schema::dropIfExists('question_meta');
     }
 }

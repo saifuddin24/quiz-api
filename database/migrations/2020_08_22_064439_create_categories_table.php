@@ -13,14 +13,15 @@ class CreateCategoriesTable extends Migration
      */
     public function up(){
 
-        Schema::create('categories', function (Blueprint $table) {
-            $table->id( );
-            $table->string('name')->nullable();
-            $table->text( "description" )->default(NULL);
-            $table->string( "type" )->default('quiz-subject' );
-            $table->bigInteger('parent')->default(0 );
-        });
-
+        if( !Schema::hasTable('categories') ) {
+            Schema::create('categories', function (Blueprint $table) {
+                $table->integerIncrements('id');
+                $table->string('name')->nullable();
+                $table->text("description")->default(NULL)->nullable();
+                $table->string("type")->default('quiz-subject');
+                $table->bigInteger('parent')->default(0);
+            });
+        }
     }
 
     /**
@@ -30,6 +31,6 @@ class CreateCategoriesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('categories');
+        //Schema::dropIfExists('categories');
     }
 }

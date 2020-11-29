@@ -13,15 +13,16 @@ class CreateUsermetasTable extends Migration
      */
     public function up()
     {
-        Schema::create('usermeta', function (Blueprint $table) {
-            $table->id( );
-            $table->unsignedBigInteger('user_id');
-            $table->string('meta_key', '191')->default( null );
-            $table->text('meta_value' )->default(null );
-            $table->string('group', 100);
-            $table->foreign('user_id')->references('id')->on('users');
-        });
-
+        if( !Schema::hasTable('usermeta' ) ) {
+            Schema::create('usermeta', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('user_id');
+                $table->string('meta_key', '191')->default(null);
+                $table->text('meta_value')->default(null);
+                $table->string('group', 100);
+                $table->foreign('user_id')->references('id')->on('users');
+            });
+        }
     }
 
     /**
@@ -31,6 +32,6 @@ class CreateUsermetasTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('usermeta');
+        //Schema::dropIfExists('usermeta');
     }
 }

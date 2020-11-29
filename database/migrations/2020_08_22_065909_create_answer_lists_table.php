@@ -12,15 +12,17 @@ class CreateAnswerListsTable extends Migration
      * @return void
      */
     public function up(){
-        Schema::create('answer_list', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger( 'participation_id')->default(NULL);
-            $table->unsignedBigInteger( 'quest_assign_id')->default(NULL);
-            $table->text( 'given_answer')->default(NULL);
-            $table->text( 'right_answer')->default(NULL);
-            $table->text( 'answer_options')->default(NULL);
-            $table->foreign("participation_id" )->references("id" )->on("participation")->cascadeOnDelete();
-        });
+        if( !Schema::hasTable('answer_list') ) {
+            Schema::create('answer_list', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('participation_id')->default(NULL);
+                $table->unsignedBigInteger('quest_assign_id')->default(NULL);
+                $table->text('given_answer')->default(NULL)->nullable();
+                $table->text('right_answer')->default(NULL)->nullable();
+                $table->json('answer_options')->default(NULL)->nullable();
+                $table->foreign("participation_id")->references("id")->on("participation")->cascadeOnDelete();
+            });
+        }
     }
 
     /**
@@ -30,6 +32,6 @@ class CreateAnswerListsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('answer_list');
+        //Schema::dropIfExists('answer_list');
     }
 }

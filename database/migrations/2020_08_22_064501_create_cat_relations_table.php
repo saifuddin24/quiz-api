@@ -13,14 +13,16 @@ class CreateCatRelationsTable extends Migration
      */
     public function up()
     {
-        Schema::create('cat_relations', function ( Blueprint $table ) {
-            $table->id( );
-            $table->unsignedBigInteger("cat_id")->default(NULL );
-            $table->unsignedBigInteger( "entity_id" )->default( NULL );
-            $table->integer( "priority" )->default(999 );
-            $table->unique( ['cat_id','entity_id' ], 'cat_id-entity_id' );
-            $table->foreign('cat_id')->references('id' )->on('categories');
-        });
+        if( !Schema::hasTable('cat_relations') ) {
+            Schema::create('cat_relations', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedInteger("cat_id")->default(NULL);
+                $table->unsignedBigInteger("entity_id")->default(NULL);
+                $table->integer("priority")->default(999);
+                $table->unique(['cat_id', 'entity_id'], 'cat_id-entity_id');
+                $table->foreign('cat_id')->references('id')->on('categories');
+            });
+        }
     }
 
     /**
@@ -30,6 +32,6 @@ class CreateCatRelationsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('cat_relations');
+        //Schema::dropIfExists('cat_relations');
     }
 }

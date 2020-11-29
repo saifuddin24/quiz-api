@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreateUsersTable extends Migration
@@ -16,7 +17,8 @@ class CreateUsersTable extends Migration
         if( !Schema::hasTable("users" ) ) {
 
             Schema::create('users', function (Blueprint $table) {
-                $table->id();
+                $table->bigInteger('id', true, true );
+                $table->integer('usertype' );
                 $table->string( 'first_name', 100)->nullable( )->default(null);
                 $table->string( 'last_name', 100)->nullable( )->default(null);
                 $table->string( 'display_name', 200)->nullable( )->default(null);
@@ -28,17 +30,18 @@ class CreateUsersTable extends Migration
                 $table->enum(   'gender', [ '', '0', '1' ] )->nullable()->default('');
                 $table->string( 'social_user_id', 100 )->nullable()->default(NULL);
                 $table->string( 'lang', 8 )->default('en');
-                $table->integer('usertype' );
                 $table->ipAddress("ip_address" )->default(NULL )->nullable();
                 $table->rememberToken(  )->nullable( )->default( null );
                 $table->timestampTz('email_verified_at' )->nullable( )->default( null);
                 $table->timestampsTz(  );
                 $table->softDeletesTz('deactivated_at' );
 
+                //$table->primary( [ 'id', 'usertype' ] );
                 $table->foreign('usertype')->references('id')->on('usertypes')
                     ->onUpdate("CASCADE" )
                     ->onDelete( "RESTRICT" );
             });
+            DB::statement('ALTER TABLE `users` DROP PRIMARY KEY, ADD PRIMARY KEY (`id`, `usertype`) USING BTREE;');
         }
     }
 
@@ -49,6 +52,6 @@ class CreateUsersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        //Schema::dropIfExists('users');
     }
 }
