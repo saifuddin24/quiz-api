@@ -13,6 +13,7 @@ use Version\Extension\Build;
 
 class CategoriesController extends Controller
 {
+    /*diff*/
 
     /**
      * Display a listing of the resource.
