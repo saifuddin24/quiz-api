@@ -101,8 +101,6 @@ class QuizController extends Controller
     public function save(Request $request, $id = null)
     {
 
-
-
         $editing =  $request->getMethod() == "PUT";
 
         $quiz = $editing ? Quiz::find( $id ):new Quiz( );

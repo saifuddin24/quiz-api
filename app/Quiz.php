@@ -94,15 +94,17 @@ class Quiz extends Model
                 }else  if( $question = Question::find( $question_id )) {
                     $assignment->answer = $question->answer;
                 }
-                $assignment->answer_options =  !empty( $answer_options_set ) ? json_encode($answer_options_set) : $assignment->answer_options;
+                $assignment->answer_options =  !empty( $answer_options_set ) ? json_encode( $answer_options_set ) : $assignment->answer_options;
                 $assignment->position =  ++$position;
                 $saved = $assignment->save( );
+
 
 //                if( !$exists ){
 //                    $result['inserted_data'][] = $assignment;
 //                }else {
 //
 //                }
+
 
                 $result['updated_data'][] = $assignment;
 
@@ -128,7 +130,7 @@ class Quiz extends Model
 
         return (int) $this->questionRelation( )
             ->where( 'answer_options', '!=', '[]')
-            ->orWhere( 'answer_options', ' IS NOT ', 'NULL')->count();
+            ->orWhereNotNull( 'answer_options' )->count();
     }
 
     public  function markEach( ){
