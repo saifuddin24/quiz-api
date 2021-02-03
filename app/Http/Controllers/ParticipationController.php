@@ -14,6 +14,7 @@ use App\Quiz;
 use App\QuizAnswer;
 use Illuminate\Auth\Events\Validated;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Mockery\Exception;
 use Psr\Log\InvalidArgumentException;
@@ -76,28 +77,33 @@ class ParticipationController extends Controller
      */
     public function save(Request $request, $id = null)
     {
+
         $participation = $this->isEdit() ? Participation::find( $id ):new Participation( );
 
         if( !$participation )
             return $this->setAndGetResponse( 'message' , 'Not found!');
 
+
         $quizQuestionsValid = Rule::exists('quest_assign' )->where( function(&$query) {
-            $query->where( 'question_data','!=', "[]" )->orWhere( 'question_data','IS NOT', NULL );
+            $query->where( 'answer_options','!=', "[]" )->orWhereNotNull( 'answer_options' );
         });
 
+
         if( !$this->isEdit() ) {
+            $validationData = [];
+            $validationData[ 'quiz_id' ] = [ 'required','numeric','exists:quizzes,id','exists:quest_assign', $quizQuestionsValid];
 
-            $data = $request->validate([
-                'user_id' => 'required|numeric|exists:users,id',
-                'quiz_id' => [ 'required','numeric','exists:quizzes,id','exists:quest_assign', $quizQuestionsValid],
-            ]);
+            if( $this->isAdmin() ) {
+                $validationData[ 'user_id' ] = 'required|numeric|exists:users,id';
+            }
 
-        }else {
+            $data = $request->validate( $validationData );
+        } else {
             return (['message' => 'editing, currently is not allowed!']);
         }
 
-        $participation->user_id = $data[ 'user_id' ];
-        $participation->quiz_id = $data[ 'quiz_id' ];
+        $user_id = $data[ 'user_id' ] ?? Auth::id( );
+        $quiz_id = $data[ 'quiz_id' ] ;
 
         $quiz = Quiz::select([
             "id",
@@ -106,33 +112,41 @@ class ParticipationController extends Controller
             "full_marks",
             "negative_marks_each",
             "negative_mark_type"
-        ])->find( $participation->quiz_id );
+        ])->find( $quiz_id );
 
-        //dd( $quiz->id, json_encode( $quiz ) );
+        //dd( $quiz->questionCount( ) );
 
-        $quiz->quest_count = $quiz->question_count( );
-        $participation->quiz_data = json_encode( $quiz );
+        $p = Participation::where( ['status' => 'running', 'user_id' => $user_id, 'quiz_id' => $quiz_id ] )->limit(1);
+        if( $p->exists( ) ) {
+            $participation = $p->first( );
+        } else {
 
-        //dd($participation);
-
-        if( $participation->save( ) ) {
-
-            $quiz->select( '' );
-
-            $relations = $quiz->questionRelation()
-                ->where( 'question_data', '!=', '[]')
-                ->orWhere( 'question_data', ' IS NOT ', 'NULL')->get( );
-
-            $this->set( 'quiz',  new QuizResource( $quiz ) );
-            $this->set( 'questions' , $relations );
-
-
+            $participation->user_id = $data[ 'user_id' ] ?? Auth::id();
+            $participation->quiz_id = $data[ 'quiz_id' ] ;
+            $quiz->quest_count = $quiz->questionCount( );
+            $participation->quiz_data = json_encode( $quiz );
+            $participation->save( );
         }
 
+        //dd( $participation );
+
+        $answered_quest_assign_ids = QuizAnswer::where( ['participation_id' => $participation->id ] )->pluck( 'quest_assign_id' );
+
+        $questions = $quiz->questionRelation( )
+            ->select(['*'])
+            ->where( function ($query) {
+                $query->where( 'answer_options', '!=', '[]');
+                $query->orWhereNotNull( 'answer_options' );
+            })
+            ->whereNotIn( 'quest_assign.id', $answered_quest_assign_ids )->get( );
 
 
-        $this->set( 'message', $this->isEdit() ? 'Pertication updated' : 'Pertication added' );
-        $this->set( 'action', $this->isEdit() ? 'updated' : 'added' );
+        QuestionResource::$isAssignedList = true;
+
+        $this->set( 'quiz',  new QuizResource( $quiz ) );
+        $this->set( 'questions' , QuestionResource::collection( $questions ) );
+        $this->set( 'message', 'Quiz Initiated!' );
+        $this->set( 'action', !$participation->wasRecentlyCreated ? 'updated' : 'added' );
         $this->set( 'success', true );
         $this->set( 'data', $participation );
 
@@ -159,6 +173,7 @@ class ParticipationController extends Controller
         if ( !$participation->exists() )
             return  $this->setAndGetResponse( 'message' , 'Participation not found!', 404 );
 
+
         $deleted = 0;
         $this->set( 'data', $participation->get() );
 
@@ -166,7 +181,7 @@ class ParticipationController extends Controller
             $this->set('action', 'deleted');
         }
 
-        if( $deleted > 0){
+        if( $deleted > 0 ){
             $this->set( 'delete_count', $deleted );
             return $this->setAndGetResponse('message', "Participation deleted" );
         }
@@ -241,7 +256,6 @@ class ParticipationController extends Controller
     }
 
     public function give_answer( Request $request, $quiz_id ){
-
         $quiz = Quiz::find(  $quiz_id );
 
         if( !$quiz->exists() )
@@ -265,16 +279,28 @@ class ParticipationController extends Controller
 
 
 
-        $question = $quiz->questionRelation()
+        $question = $quiz->questionRelation( )
             ->where( 'question_id', $data['question_id'] )->first( );
 
+        $right_option = '';
+
+        $opts = json_decode( $question->answer_options, true ) ?? [];
+
+        foreach( $opts as $opt  ) {
+            if( $question->assigned_answer == $opt['value']) {
+                $right_option = $opt['opt'];
+            }
+        }
+
+        //return [ $right_option ];
 
         $qu_cols = [
             "participation.user_id", "quizzes.id", "quiz_id", "participation_date", "title",
             "description","full_marks","negative_marks_each","negative_mark_type"
         ];
 
-        $participation = Participation::join( 'quizzes', 'quizzes.id', 'participation.quiz_id')->find( $data[ "participation_id" ] , $qu_cols );
+        $participation = Participation::join( 'quizzes', 'quizzes.id', 'participation.quiz_id')
+            ->find( $data[ "participation_id" ] , $qu_cols );
 
 //        return response( [$question] );
 
@@ -290,6 +316,10 @@ class ParticipationController extends Controller
 
         $answer = new QuizAnswer();
 
+        $reqAns = $request->answer ?? '';
+
+        $reqOption = $opts[$reqAns]['opt'] ?? '';
+
         $qData = json_decode( $question->question_data, true );
         $qData = is_array($qData) ? $qData:[];
 
@@ -297,8 +327,8 @@ class ParticipationController extends Controller
 
         $answer->participation_id   = $data[ "participation_id" ];
         $answer->quest_assign_id    = $question->assigned_id;
-        $answer->given_answer       = request("answer") ?: NULL;
-        $answer->right_answer       = $question->answer;
+        $answer->given_answer       = $reqOption;
+        $answer->right_answer       = $right_option;
         $answer->answer_options     = json_encode( $qData );
 
         if(  $answer->save() ) {
