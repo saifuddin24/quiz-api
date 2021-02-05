@@ -286,11 +286,16 @@ class ParticipationController extends Controller
 
         $opts = json_decode( $question->answer_options, true ) ?? [];
 
+
+
         foreach( $opts as $opt  ) {
             if( $question->assigned_answer == $opt['value']) {
                 $right_option = $opt['opt'];
             }
         }
+
+
+        //return [$opts, $right_option, $question->assigned_answer, $request->answer ];
 
         //return [ $right_option ];
 
@@ -324,6 +329,7 @@ class ParticipationController extends Controller
         $qData = is_array($qData) ? $qData:[];
 
         $qData['question_title'] = $question->title;
+        $qData['options'] = $opts;
 
         $answer->participation_id   = $data[ "participation_id" ];
         $answer->quest_assign_id    = $question->assigned_id;
@@ -331,7 +337,14 @@ class ParticipationController extends Controller
         $answer->right_answer       = $right_option;
         $answer->answer_options     = json_encode( $qData );
 
+
+        $this->set( 'complete', false );
         if(  $answer->save() ) {
+            if( isset( $request->remaining ) && $request->remaining == 1  ) {
+                Participation::where('id', $data['participation_id'] )->update(['status' => 'completed']);
+                $this->set( 'completed', true );
+            }
+
             $this->set( 'success', true );
             $this->set( 'data', $answer );
             $this->set( 'action', 'answer_given' );
