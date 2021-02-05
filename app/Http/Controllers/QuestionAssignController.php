@@ -114,9 +114,11 @@ class QuestionAssignController extends Controller
         $questAssign = $this->isEdit() ? QuestAssign::find( $id ):new QuestAssign( );
 
 
+        //return  $questAssign;
+
 
         if( !$questAssign )
-            return $this->setAndGetResponse( 'message' , 'Undefined assignment id!');
+            return $this->setAndGetResponse( 'message' , 'Undefined assignment id!', 422);
 
         $uniqueAssign = Rule::unique( 'quest_assign' )->where(function ($query) {
             return $query->where( [ 'question_id' => request('question_id' ) ]);
