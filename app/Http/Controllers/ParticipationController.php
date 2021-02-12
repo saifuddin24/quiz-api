@@ -99,7 +99,7 @@ class ParticipationController extends Controller
 
             $data = $request->validate( $validationData );
         } else {
-            return (['message' => 'editing, currently is not allowed!']);
+            return (['message' => 'Editing, currently is not allowed!']);
         }
 
         $user_id = $data[ 'user_id' ] ?? Auth::id( );

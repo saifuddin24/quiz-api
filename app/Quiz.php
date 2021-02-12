@@ -99,13 +99,6 @@ class Quiz extends Model
                 $saved = $assignment->save( );
 
 
-//                if( !$exists ){
-//                    $result['inserted_data'][] = $assignment;
-//                }else {
-//
-//                }
-
-
                 $result['updated_data'][] = $assignment;
 
                 if( $saved ) {
@@ -128,16 +121,20 @@ class Quiz extends Model
 
     public  function questionCount( ){
 
-        return (int) $this->questionRelation( )
-            ->where( 'answer_options', '!=', '[]')
-            ->orWhereNotNull( 'answer_options' )->count();
+        return $this->questionRelation( )
+            ->where( function ($q) {
+                $q->where( 'answer_options', '!=', '[]')
+                ->orWhereNotNull( 'answer_options' );
+            })->count();
     }
 
     public  function markEach( ){
 
         $total_questions = (int) $this->questionRelation( )
-            ->where( 'answer_options', '!=', '[]')
-            ->orWhere( 'answer_options', ' IS NOT ', 'NULL')->count();
+            ->where( function ($q) {
+                $q->where( 'answer_options', '!=', '[]')
+                    ->orWhereNotNull( 'answer_options' );
+            })->count();
 
         $full_marks = (int) $this->full_marks;
 
