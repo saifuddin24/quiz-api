@@ -99,7 +99,7 @@ class ParticipationController extends Controller
 
             $data = $request->validate( $validationData );
         } else {
-            return (['message' => 'editing, currently is not allowed!']);
+            return (['message' => 'Editing, currently is not allowed!']);
         }
 
         $user_id = $data[ 'user_id' ] ?? Auth::id( );
@@ -198,7 +198,7 @@ class ParticipationController extends Controller
             return $this->setAndGetResponse( 'message', 'Participation not found!', 404 );
 
 
-        if( $this->user_id() !== $participation->user_id )
+        if( $this->user_id() != $participation->user_id )
             return $this->setAndGetResponse( 'message', 'You are not allowed!', 403 );
 
         try {
@@ -307,12 +307,14 @@ class ParticipationController extends Controller
         $participation = Participation::join( 'quizzes', 'quizzes.id', 'participation.quiz_id')
             ->find( $data[ "participation_id" ] , $qu_cols );
 
+        //return [ $participation->user_id, $this->user_id() ];
+
 //        return response( [$question] );
 
         if( !$participation )
             return $this->setAndGetResponse( 'message' , 'Not found!', 404 );
 
-        if( $participation->user_id !== $this->user_id() )
+        if( $participation->user_id != $this->user_id() )
             return $this->setAndGetResponse( 'message' , 'You are not allowed', 403 );
 
         if( QuizAnswer::alreadyGiven( $data[ "participation_id" ], $question->assigned_id ) )
